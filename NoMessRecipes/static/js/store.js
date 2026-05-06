@@ -2,7 +2,8 @@ const state = {
   user: null,
   query: "",
   recipes: [],
-  savedRecipes: []
+  savedRecipes: [],
+  likedRecipes: []
 };
 
 const listeners = new Set();

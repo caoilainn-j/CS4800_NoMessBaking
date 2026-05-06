@@ -1,6 +1,6 @@
 import { el } from "../utils/dom.js";
 import { store } from "../store.js";
-import { saveRecipe, unsaveRecipe } from "../api.js";
+import { saveRecipe, unsaveRecipe, likeRecipe, unlikeRecipe } from "../api.js";
 
 const FALLBACK_IMAGE = "data:image/svg+xml;utf8," + encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
@@ -15,6 +15,11 @@ const FALLBACK_IMAGE = "data:image/svg+xml;utf8," + encodeURIComponent(`
 function isSaved(recipeId) {
   const { user } = store.get();
   return !!user && Array.isArray(user.saved_recipe_ids) && user.saved_recipe_ids.includes(recipeId);
+}
+
+function isLiked(recipeId) {
+  const { user } = store.get();
+  return !!user && Array.isArray(user.liked_recipe_ids) && user.liked_recipe_ids.includes(recipeId);
 }
 
 function makeSaveButton(recipeId) {
@@ -58,6 +63,72 @@ function makeSaveButton(recipeId) {
   return button;
 }
 
+function updateLikeDisplays(recipeId, likeCount) {
+  document
+    .querySelectorAll(`[data-like-count-for="${recipeId}"]`)
+    .forEach((node) => {
+      node.textContent = formatLikes(likeCount);
+    });
+}
+
+function makeLikeButton(recipe) {
+  const button = el("button", { className: "btn", type: "button" }, "Like");
+
+  async function onToggle() {
+    const { user } = store.get();
+
+    if (!user) {
+      showToast("Please log in to like posts.");
+      window.location.hash = "#/profile";
+      return;
+    }
+
+    try {
+      const wasLiked = isLiked(recipe.id);
+      const result = wasLiked
+        ? await unlikeRecipe(recipe.id)
+        : await likeRecipe(recipe.id);
+
+      store.set({ user: result.user });
+
+      const updated = result.recipe || recipe;
+      recipe.like_count = updated.like_count;
+      recipe.liked_by_current_user = updated.liked_by_current_user;
+      updateLikeDisplays(recipe.id, recipe.like_count);
+      button.textContent = `${isLiked(recipe.id) ? "Unlike" : "Like"}`;
+      showToast(wasLiked ? "Removed from liked posts." : "Liked.");
+    } catch (error) {
+      showToast(error.message || "Could not update liked posts.");
+    }
+  }
+
+  button.textContent = `${isLiked(recipe.id) || recipe.liked_by_current_user ? "Unlike" : "Like"}`;
+  button.addEventListener("click", onToggle);
+  return button;
+}
+
+export function formatDuration(minutes) {
+  const mins = Number(minutes) || 0;
+
+  if (mins < 60) {
+    return `${mins} min`;
+  }
+
+  const hours = Math.floor(mins / 60);
+  const remaining = mins % 60;
+
+  if (remaining === 0) {
+    return `${hours} hr`;
+  }
+
+  return `${hours} hr${hours > 1 ? "s" : ""}${remaining ? ` ${remaining} min` : ""}`;
+}
+
+export function formatLikes(count) {
+  const n = Number(count) || 0;
+  return `${n} ${n === 1 ? "like" : "likes"}`;
+}
+
 export function recipeCard(r) {
   return el("article", { className: "card", style: "grid-column: span 4;" },
     el("img", {
@@ -65,23 +136,34 @@ export function recipeCard(r) {
       alt: r.title,
       className: "card__image"
     }),
-    el("div", { className: "card__body" },
+    el("div", {
+      className: "card__body",
+      style: "display:flex; flex-direction:column; height:100%;"
+    },
       el("h3", { style: "margin:0 0 8px 0" }, r.title),
       el("div", { className: "card__meta" },
         el("span", {}, `By ${r.author}`),
-        el("span", {}, `${r.minutes} min`),
+        el("span", {}, formatDuration(r.minutes)),
+        el("span", { "data-like-count-for": r.id }, formatLikes(r.like_count)),
         el("span", {}, (r.tags || []).join(" • "))
       ),
-      el("div", { style: "margin-top:12px; display:flex; gap:10px;" },
-        el("a", { className: "btn", href: `#/recipe/${r.id}` }, "View"),
-        makeSaveButton(r.id)
-      )
+      el("div", {
+        style: "margin-top:auto; padding-top:16px; display:flex; gap:10px; align-items:center; flex-wrap:nowrap;"
+      },
+          el("a", { className: "btn", href: `#/recipe/${r.id}` }, "View"),
+          makeSaveButton(r.id),
+          makeLikeButton(r)
+        )
+      ),
     )
-  );
 }
 
 export function renderSaveButton(recipeId) {
   return makeSaveButton(recipeId);
+}
+
+export function renderLikeButton(recipe) {
+  return makeLikeButton(recipe);
 }
 
 export function showToast(message) {

@@ -22,6 +22,8 @@ async function jsonFetch(url, options = {}) {
   return data;
 }
 
+// --- RECIPES ---
+
 export async function fetchRecipes({ query = "" } = {}) {
   const params = new URLSearchParams();
 
@@ -47,6 +49,23 @@ export async function createRecipe(input) {
   });
 }
 
+// --- NEW: MY POSTS ---
+
+export async function fetchMyRecipes() {
+  return jsonFetch("/api/my-recipes");
+}
+
+// --- NEW: UPDATE RECIPE ---
+
+export async function updateRecipe(id, input) {
+  return jsonFetch(`/api/recipes/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify(input)
+  });
+}
+
+// --- AUTH ---
+
 export async function register(input) {
   return jsonFetch("/api/register", {
     method: "POST",
@@ -71,6 +90,8 @@ export async function fetchMe() {
   return jsonFetch("/api/me");
 }
 
+// --- SAVED ---
+
 export async function fetchSavedRecipes() {
   return jsonFetch("/api/saved");
 }
@@ -84,5 +105,32 @@ export async function saveRecipe(id) {
 export async function unsaveRecipe(id) {
   return jsonFetch(`/api/saved/${encodeURIComponent(id)}`, {
     method: "DELETE"
+  });
+}
+
+// --- LIKES ---
+
+export async function fetchLikedRecipes() {
+  return jsonFetch("/api/liked");
+}
+
+export async function likeRecipe(id) {
+  return jsonFetch(`/api/likes/${encodeURIComponent(id)}`, {
+    method: "POST"
+  });
+}
+
+export async function unlikeRecipe(id) {
+  return jsonFetch(`/api/likes/${encodeURIComponent(id)}`, {
+    method: "DELETE"
+  });
+}
+
+// --- COMMENTS ---
+
+export async function addComment(id, text) {
+  return jsonFetch(`/api/recipes/${encodeURIComponent(id)}/comments`, {
+    method: "POST",
+    body: JSON.stringify({ text })
   });
 }

@@ -4,6 +4,7 @@ import { renderRecipeDetail } from "./pages/recipeDetail.js";
 import { renderCreateRecipe } from "./pages/createRecipe.js";
 import { renderProfile } from "./pages/profile.js";
 import { renderSaved } from "./pages/saved.js";
+import { renderLiked } from "./pages/liked.js";
 
 const routes = [
   { path: /^#\/$/, render: () => renderHome() },
@@ -11,7 +12,8 @@ const routes = [
   { path: /^#\/recipe\/([\w-]+)$/, render: (m) => renderRecipeDetail(m[1]) },
   { path: /^#\/create$/, render: () => renderCreateRecipe() },
   { path: /^#\/profile$/, render: () => renderProfile() },
-  { path: /^#\/saved$/, render: () => renderSaved() }
+  { path: /^#\/saved$/, render: () => renderSaved() },
+  { path: /^#\/liked$/, render: () => renderLiked() }
 ];
 
 export function initRouter() {

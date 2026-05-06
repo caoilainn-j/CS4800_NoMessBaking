@@ -14,13 +14,20 @@
   outline:none;
 }
 
-.btn{
+.btn {
   border:1px solid var(--border);
   background:#dec9a2;
   color:var(--text);
   border-radius:12px;
   padding:10px 12px;
   cursor:pointer;
+
+  font-size: 0.95rem;        /* ensures consistency */
+  line-height: 1;            /* removes vertical drift */
+  display: inline-flex;      /* aligns text inside */
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;       /* prevents text wrapping */
 }
 .btn--primary{ background:var(--primary); border-color:transparent; color:#7e5e22; font-weight:700; }
 .btn--danger{ background:var(--danger); border-color:transparent; color:#d2b681; font-weight:700; }
@@ -30,8 +37,10 @@
   border:1px solid var(--border);
   background:linear-gradient(180deg, #efb954, #efb954);
   overflow:hidden;
+  display: flex;
+  flex-direction: column
 }
-.card__body{ padding:14px; }
+.card__body{ padding:14px; flex:1}
 .card__meta{ color:var(--muted); font-size:.92rem; display:flex; gap:10px; flex-wrap:wrap; }
 .card__image{
   width:100%;

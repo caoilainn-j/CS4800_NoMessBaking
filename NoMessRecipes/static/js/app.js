@@ -42,7 +42,7 @@ function wireGlobalUI() {
   window.addEventListener("app:logout", async () => {
     try {
       await logout();
-      store.set({ user: null, savedRecipes: [] });
+      store.set({ user: null, savedRecipes: [], likedRecipes: [] });
       showToast("Logged out.");
       window.location.hash = "#/";
     } catch (error) {
