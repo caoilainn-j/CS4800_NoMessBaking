@@ -16,12 +16,25 @@ const routes = [
   { path: /^#\/liked$/, render: () => renderLiked() }
 ];
 
+function trackPage() {
+  if (typeof gtag !== "undefined") {
+    gtag('event', 'page_view', {
+      page_path: window.location.hash,
+      page_location: window.location.href
+    });
+  }
+}
+
 export function initRouter() {
   const onRoute = () => {
     const hash = window.location.hash || "#/";
     for (const r of routes) {
       const m = hash.match(r.path);
-      if (m) return r.render(m);
+      if (m) {
+        r.render(m);
+        trackPage();
+        return;
+      }
     }
     window.location.hash = "#/";
   };
@@ -29,3 +42,4 @@ export function initRouter() {
   window.addEventListener("hashchange", onRoute);
   onRoute();
 }
+
