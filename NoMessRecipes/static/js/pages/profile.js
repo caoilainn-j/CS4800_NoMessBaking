@@ -4,7 +4,8 @@ import {
   login,
   register,
   fetchMyRecipes,
-  updateRecipe
+  updateRecipe,
+  deleteRecipe
 } from "../api.js";
 import { showToast } from "../ui/components.js";
 import { renderRecipeForm } from "./createRecipe.js";
@@ -19,7 +20,8 @@ function renderAuth(app) {
   const password = el("input", {
     className: "input",
     placeholder: "Password",
-    type: "password"
+    type: "password",
+    style: "margin-top:10px;"
   });
 
   const submit = el("button", { className: "btn btn--primary" }, "Log in");
@@ -66,14 +68,19 @@ function renderAuth(app) {
   };
 
   sync();
+  const formFields = el("div", {
+    style: "display:grid; gap:8px;"
+  },
+    name,
+    email,
+    password
+  );
 
   app.append(
     el("div", { className: "panel", style: "padding:18px; max-width:520px;" },
       title,
-      name,
-      email,
-      password,
-      el("div", { style: "display:flex; gap:10px; margin-top:10px;" },
+      formFields,
+      el("div", { style: "display:flex; gap:10px; margin-top:12px;" },
         submit,
         toggle
       )
@@ -115,12 +122,33 @@ function renderMyPosts(app) {
               try {
                 await updateRecipe(r.id, payload);
                 showToast("Updated.");
-                renderProfile(); // return to profile view
+                renderProfile();
               } catch (err) {
                 showToast(err.message || "Update failed.");
               }
             }
           });
+        };
+
+        const deleteBtn = el("button", {
+          className: "btn btn--danger",
+          type: "button"
+        }, "Delete");
+
+        deleteBtn.onclick = async () => {
+          const confirmed = window.confirm(
+            `Delete "${r.title}"? This cannot be undone.`
+          );
+
+          if (!confirmed) return;
+
+          try {
+            await deleteRecipe(r.id);
+            showToast("Deleted.");
+            await load();
+          } catch (err) {
+            showToast(err.message || "Delete failed.");
+          }
         };
 
         list.append(
@@ -129,7 +157,8 @@ function renderMyPosts(app) {
             el("p", { style: "margin:0; color:var(--muted);" }, `${r.minutes} min`),
             el("div", { style: "margin-top:8px; display:flex; gap:10px;" },
               viewBtn,
-              editBtn
+              editBtn,
+              deleteBtn
             )
           )
         );

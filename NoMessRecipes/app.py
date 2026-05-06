@@ -530,6 +530,39 @@ def add_comment(recipe_id):
     refreshed_recipe = collection.find_one({"_id": recipe_obj_id})
     return jsonify(recipe_from_mongo(refreshed_recipe, user)), 201
 
+@app.delete("/api/recipes/<recipe_id>")
+def delete_recipe(recipe_id):
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Authentication required"}), 401
+
+    try:
+        obj_id = ObjectId(recipe_id)
+    except:
+        return jsonify({"error": "Invalid recipe id"}), 400
+
+    recipe = collection.find_one({"_id": obj_id})
+    if not recipe:
+        return jsonify({"error": "Recipe not found"}), 404
+
+    if recipe.get("user_id") != str(user["_id"]):
+        return jsonify({"error": "Unauthorized"}), 403
+
+    # remove recipe
+    collection.delete_one({"_id": obj_id})
+
+    # cleanup references
+    users.update_many(
+        {},
+        {
+            "$pull": {
+                "saved_recipe_ids": recipe_id,
+                "liked_recipe_ids": recipe_id
+            }
+        }
+    )
+
+    return jsonify({"ok": True})
 
 @app.get("/create")
 @app.get("/profile")

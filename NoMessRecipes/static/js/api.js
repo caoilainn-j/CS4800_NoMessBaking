@@ -49,13 +49,21 @@ export async function createRecipe(input) {
   });
 }
 
-// --- NEW: MY POSTS ---
+// --- NEW: DELETE RECIPE ---
+
+export async function deleteRecipe(id) {
+  return jsonFetch(`/api/recipes/${encodeURIComponent(id)}`, {
+    method: "DELETE"
+  });
+}
+
+// --- MY POSTS ---
 
 export async function fetchMyRecipes() {
   return jsonFetch("/api/my-recipes");
 }
 
-// --- NEW: UPDATE RECIPE ---
+// --- UPDATE RECIPE ---
 
 export async function updateRecipe(id, input) {
   return jsonFetch(`/api/recipes/${encodeURIComponent(id)}`, {
